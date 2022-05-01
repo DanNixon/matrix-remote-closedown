@@ -32,16 +32,19 @@ pub(crate) fn run_task(tx: Sender<Event>, config: Cli) -> Result<JoinHandle<()>>
                 }
                 Event::MatrixMessageReceive(event) => {
                     if !event.body.starts_with('!') {
+                        log::debug!("Ignoring message with no command marker");
                         continue;
                     }
 
                     let room = event.room.clone();
                     if !config.matrix_rooms.contains(&room) {
+                        log::debug!("Ignoring message in room we do not watch");
                         continue;
                     }
 
                     let sender = event.sender.clone();
                     if config.matrix_username == sender {
+                        log::debug!("Ignoring message sent by the bot user");
                         continue;
                     }
 

@@ -54,11 +54,7 @@ pub(crate) async fn login(tx: Sender<Event>, args: Cli) -> Result<Client> {
                 async move {
                     if let Room::Joined(room) = room {
                         if let Some(msg_body) = get_message_body(&event) {
-                            log::debug!(
-                                "Received message \"{}\" in room {}",
-                                msg_body,
-                                room.room_id()
-                            );
+                            log::debug!("Received message in room {}", room.room_id());
                             crate::send_event!(
                                 tx,
                                 Event::MatrixMessageReceive(MatrixMessageReceiveEvent {
