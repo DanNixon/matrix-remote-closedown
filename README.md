@@ -6,6 +6,8 @@ A [Matrix](https://matrix.org/) bot that provides a nice interface to [remote-cl
 
 See `matrix-remote-closedown --help`.
 
+Note that the bot user must already be a member of the rooms specified via the `--room` flag.
+
 ## Deployment
 
 E.g. via Podman:
