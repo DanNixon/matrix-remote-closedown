@@ -7,7 +7,8 @@ RUN apk add \
   make \
   openssl-dev
 
-COPY . .
+ADD Cargo.toml Cargo.lock .
+ADD src ./src
 RUN RUSTFLAGS=-Ctarget-feature=-crt-static cargo install \
   --path . \
   --root /usr/local
@@ -15,6 +16,7 @@ RUN RUSTFLAGS=-Ctarget-feature=-crt-static cargo install \
 FROM docker.io/library/alpine:3.15
 
 RUN apk add \
+  tini \
   libgcc \
   libstdc++
 
@@ -22,4 +24,4 @@ COPY --from=builder \
   /usr/local/bin/matrix-remote-closedown \
   /usr/local/bin/matrix-remote-closedown
 
-ENTRYPOINT ["/usr/local/bin/matrix-remote-closedown"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/matrix-remote-closedown"]
