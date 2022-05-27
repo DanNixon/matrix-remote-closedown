@@ -96,7 +96,7 @@ async fn main() -> Result<()> {
 
     let args = Cli::parse();
 
-    let (tx, _) = broadcast::channel::<Event>(16);
+    let (tx, mut rx) = broadcast::channel::<Event>(16);
 
     let matrix_client = matrix::login(tx.clone(), args.clone()).await?;
 
@@ -112,10 +112,13 @@ async fn main() -> Result<()> {
             .await;
     });
 
-    match signal::ctrl_c().await {
-        Ok(()) => {}
-        Err(err) => {
-            log::error!("Unable to listen for shutdown signal: {}", err);
+    loop {
+        let should_exit = tokio::select! {
+            _ = signal::ctrl_c() => true,
+            event = rx.recv() => matches!(event, Ok(Event::Exit)),
+        };
+        if should_exit {
+            break;
         }
     }
 
