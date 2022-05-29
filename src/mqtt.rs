@@ -1,7 +1,8 @@
 use crate::{event::Event, Cli};
 use anyhow::{anyhow, Result};
-use paho_mqtt::{AsyncClient, ConnectOptionsBuilder, CreateOptionsBuilder, Message};
-use std::env;
+use paho_mqtt::{
+    AsyncClient, ConnectOptionsBuilder, CreateOptionsBuilder, Message, PersistenceType,
+};
 use tokio::{
     sync::broadcast::Sender,
     task::JoinHandle,
@@ -13,22 +14,27 @@ pub(crate) async fn run_task(tx: Sender<Event>, args: &Cli) -> Result<JoinHandle
         CreateOptionsBuilder::new()
             .server_uri(&args.mqtt_broker)
             .client_id(&args.mqtt_client_id)
-            .persistence(env::temp_dir())
+            .persistence(PersistenceType::None)
             .finalize(),
     )?;
 
     let stream = client.get_stream(25);
 
+    let status_topic = args.status_topic.clone();
+    let mqtt_qos = args.mqtt_qos;
+    client.set_connected_callback(move |c| {
+        c.subscribe(&status_topic, mqtt_qos);
+    });
+
     client
         .connect(
             ConnectOptionsBuilder::new()
+                .clean_session(true)
                 .user_name(&args.mqtt_username)
                 .password(&args.mqtt_password)
                 .finalize(),
         )
         .wait()?;
-
-    client.subscribe(&args.status_topic, args.mqtt_qos).await?;
 
     let mut rx = tx.subscribe();
     let command_topic = args.command_topic.clone();
