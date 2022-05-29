@@ -1,5 +1,5 @@
 use crate::{event::Event, Cli};
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use paho_mqtt::{
     AsyncClient, ConnectOptionsBuilder, CreateOptionsBuilder, Message, PersistenceType,
 };
@@ -26,15 +26,22 @@ pub(crate) async fn run_task(tx: Sender<Event>, args: &Cli) -> Result<JoinHandle
         c.subscribe(&status_topic, mqtt_qos);
     });
 
-    client
+    let response = client
         .connect(
             ConnectOptionsBuilder::new()
                 .clean_session(true)
+                .automatic_reconnect(Duration::from_secs(1), Duration::from_secs(5))
+                .keep_alive_interval(Duration::from_secs(5))
                 .user_name(&args.mqtt_username)
                 .password(&args.mqtt_password)
                 .finalize(),
         )
         .wait()?;
+
+    log::info!(
+        "Using MQTT version {}",
+        response.connect_response().unwrap().mqtt_version
+    );
 
     let mut rx = tx.subscribe();
     let command_topic = args.command_topic.clone();
@@ -64,41 +71,15 @@ pub(crate) async fn run_task(tx: Sender<Event>, args: &Cli) -> Result<JoinHandle
                 }
             }
 
-            match stream.try_recv() {
-                Ok(Some(msg)) => {
-                    log::info!("Received message on topic \"{}\"", msg.topic());
-                    crate::send_event!(
-                        tx,
-                        Event::MqttStatusMessageReceived(msg.payload_str().to_string())
-                    );
-                }
-                Ok(None) => {
-                    if let Err(e) = try_reconnect(&client).await {
-                        log::error!("Failed to reconnect: {}", e);
-                        tx.send(Event::Exit).unwrap();
-                    }
-                }
-                Err(_) => {}
+            if let Ok(Some(msg)) = stream.try_recv() {
+                log::info!("Received message on topic \"{}\"", msg.topic());
+                crate::send_event!(
+                    tx,
+                    Event::MqttStatusMessageReceived(msg.payload_str().to_string())
+                );
             }
 
             beat.tick().await;
         }
     }))
-}
-
-async fn try_reconnect(c: &AsyncClient) -> Result<()> {
-    for i in 0..10 {
-        log::info!("Attempting reconnection {}...", i);
-        match c.reconnect().await {
-            Ok(_) => {
-                log::info!("Reconnection successful");
-                return Ok(());
-            }
-            Err(e) => {
-                log::error!("Reconnection failed: {}", e);
-            }
-        }
-        tokio::time::sleep(Duration::from_secs(1)).await;
-    }
-    Err(anyhow!("Failed to reconnect to broker"))
 }
