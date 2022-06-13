@@ -28,11 +28,17 @@ macro_rules! send_event {
 #[clap(author, version, about, long_about = None)]
 struct Cli {
     /// Address of MQTT broker to connect to
-    #[clap(long, env = "MQTT_BROKER", default_value = "tcp://localhost:1883")]
+    #[clap(
+        value_parser,
+        long,
+        env = "MQTT_BROKER",
+        default_value = "tcp://localhost:1883"
+    )]
     mqtt_broker: String,
 
     /// Client ID to use when connecting to MQTT broker
     #[clap(
+        value_parser,
         long,
         env = "MQTT_CLIENT_ID",
         default_value = "matrix-remote-closedown"
@@ -40,43 +46,43 @@ struct Cli {
     mqtt_client_id: String,
 
     /// MQTT QoS, must be 0, 1 or 2
-    #[clap(long, env = "MQTT_QOS", default_value = "0")]
+    #[clap(value_parser, long, env = "MQTT_QOS", default_value = "0")]
     mqtt_qos: i32,
 
     /// MQTT username
-    #[clap(long, env = "MQTT_USERNAME", default_value = "")]
+    #[clap(value_parser, long, env = "MQTT_USERNAME", default_value = "")]
     mqtt_username: String,
 
     /// MQTT password
-    #[clap(long, env = "MQTT_PASSWORD", default_value = "")]
+    #[clap(value_parser, long, env = "MQTT_PASSWORD", default_value = "")]
     mqtt_password: String,
 
     /// Matrix username
-    #[clap(long, env = "MATRIX_USERNAME")]
+    #[clap(value_parser, long, env = "MATRIX_USERNAME")]
     matrix_username: UserId,
 
     /// Matrix password
-    #[clap(long, env = "MATRIX_PASSWORD")]
+    #[clap(value_parser, long, env = "MATRIX_PASSWORD")]
     matrix_password: String,
 
     /// Topic to listen for status messages on
-    #[clap(long, env = "STATUS_TOPIC")]
+    #[clap(value_parser, long, env = "STATUS_TOPIC")]
     status_topic: String,
 
     /// Topic to send command messages on
-    #[clap(long, env = "COMMAND_TOPIC")]
+    #[clap(value_parser, long, env = "COMMAND_TOPIC")]
     command_topic: String,
 
     /// Station name
-    #[clap(long, env = "STATION_NAME")]
+    #[clap(value_parser, long, env = "STATION_NAME")]
     station_name: String,
 
     /// Station operator Matrix IDs
-    #[clap(long = "operator")]
+    #[clap(value_parser, long = "operator")]
     station_operators: Vec<UserId>,
 
     /// Matrix rooms to send messages to and listen for commands from
-    #[clap(long = "room")]
+    #[clap(value_parser, long = "room")]
     matrix_rooms: Vec<RoomId>,
 }
 
