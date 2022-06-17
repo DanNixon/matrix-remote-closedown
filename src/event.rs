@@ -1,6 +1,6 @@
 use crate::command::Command;
 use anyhow::Error;
-use matrix_sdk::ruma::{RoomId, UserId};
+use matrix_sdk::ruma::{OwnedRoomId, OwnedUserId};
 
 #[derive(Clone, Debug)]
 pub(crate) enum Event {
@@ -17,20 +17,20 @@ pub(crate) enum Event {
 
 #[derive(Clone, Debug)]
 pub(crate) struct MatrixMessageReceiveEvent {
-    pub room: RoomId,
-    pub sender: UserId,
+    pub room: OwnedRoomId,
+    pub sender: OwnedUserId,
     pub body: String,
 }
 
 #[derive(Clone, Debug)]
 pub(crate) struct MatrixMessageSendEvent {
-    pub room: RoomId,
+    pub room: OwnedRoomId,
     pub body: String,
 }
 
 #[derive(Clone, Debug)]
 pub(crate) struct CommandEvent {
-    pub room: RoomId,
+    pub room: OwnedRoomId,
     pub cmd: Command,
 }
 
