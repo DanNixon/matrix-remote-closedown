@@ -9,8 +9,8 @@ use crate::event::Event;
 use anyhow::Result;
 use clap::Parser;
 use matrix_sdk::{
-    ruma::{RoomId, UserId},
-    SyncSettings,
+    config::SyncSettings,
+    ruma::{OwnedRoomId, OwnedUserId},
 };
 use tokio::{signal, sync::broadcast};
 
@@ -59,7 +59,7 @@ struct Cli {
 
     /// Matrix username
     #[clap(value_parser, long, env = "MATRIX_USERNAME")]
-    matrix_username: UserId,
+    matrix_username: OwnedUserId,
 
     /// Matrix password
     #[clap(value_parser, long, env = "MATRIX_PASSWORD")]
@@ -79,11 +79,11 @@ struct Cli {
 
     /// Station operator Matrix IDs
     #[clap(value_parser, long = "operator")]
-    station_operators: Vec<UserId>,
+    station_operators: Vec<OwnedUserId>,
 
     /// Matrix rooms to send messages to and listen for commands from
     #[clap(value_parser, long = "room")]
-    matrix_rooms: Vec<RoomId>,
+    matrix_rooms: Vec<OwnedRoomId>,
 }
 
 impl Cli {

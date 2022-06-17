@@ -4,34 +4,21 @@ use crate::{
 };
 use anyhow::Result;
 use matrix_sdk::{
+    config::SyncSettings,
     room::Room,
-    ruma::events::{
-        room::message::{MessageEventContent, MessageType, TextMessageEventContent},
-        AnyMessageEventContent, SyncMessageEvent,
+    ruma::events::room::message::{
+        MessageType, OriginalSyncRoomMessageEvent, RoomMessageEventContent, TextMessageEventContent,
     },
-    Client, SyncSettings,
+    Client,
 };
 use tokio::{sync::broadcast::Sender, task::JoinHandle};
 
-fn get_message_body(event: &SyncMessageEvent<MessageEventContent>) -> Option<&String> {
-    if let SyncMessageEvent {
-        content:
-            MessageEventContent {
-                msgtype: MessageType::Text(TextMessageEventContent { body, .. }),
-                ..
-            },
-        ..
-    } = event
-    {
-        Some(body)
-    } else {
-        None
-    }
-}
-
 pub(crate) async fn login(tx: Sender<Event>, args: Cli) -> Result<Client> {
     log::info!("Logging into Matrix homeserver...");
-    let client = Client::new_from_user_id(args.matrix_username.clone()).await?;
+    let client = Client::builder()
+        .homeserver_url(format!("https://{}", args.matrix_username.server_name()))
+        .build()
+        .await?;
     client
         .login(
             args.matrix_username.localpart(),
@@ -49,21 +36,21 @@ pub(crate) async fn login(tx: Sender<Event>, args: Cli) -> Result<Client> {
     client
         .register_event_handler({
             let tx = tx.clone();
-            move |event: SyncMessageEvent<MessageEventContent>, room: Room| {
+            move |event: OriginalSyncRoomMessageEvent, room: Room| {
                 let tx = tx.clone();
                 async move {
-                    if let Room::Joined(room) = room {
-                        if let Some(msg_body) = get_message_body(&event) {
-                            log::debug!("Received message in room {}", room.room_id());
-                            crate::send_event!(
-                                tx,
-                                Event::MatrixMessageReceive(MatrixMessageReceiveEvent {
-                                    room: room.room_id().clone(),
-                                    body: msg_body.to_string(),
-                                    sender: event.sender,
-                                })
-                            );
-                        }
+                    if let MessageType::Text(TextMessageEventContent { body, .. }) =
+                        event.content.msgtype
+                    {
+                        log::debug!("Received message in room {}", room.room_id());
+                        crate::send_event!(
+                            tx,
+                            Event::MatrixMessageReceive(MatrixMessageReceiveEvent {
+                                room: room.room_id().into(),
+                                body,
+                                sender: event.sender,
+                            })
+                        );
                     }
                 }
             }
@@ -88,12 +75,7 @@ pub(crate) fn run_send_task(tx: Sender<Event>, client: Client) -> Result<JoinHan
                     if let Err(e) = client
                         .get_joined_room(&msg.room)
                         .unwrap()
-                        .send(
-                            AnyMessageEventContent::RoomMessage(MessageEventContent::new(
-                                MessageType::Text(TextMessageEventContent::markdown(msg.body)),
-                            )),
-                            None,
-                        )
+                        .send(RoomMessageEventContent::text_markdown(msg.body), None)
                         .await
                     {
                         log::error!("Failed to send message: {}", e);
