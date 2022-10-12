@@ -1,4 +1,4 @@
-# matrix-remote-closedown [![CI](https://github.com/DanNixon/matrix-remote-closedown/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/DanNixon/matrix-remote-closedown/actions/workflows/ci.yml)
+# matrix-remote-closedown [![CI](https://github.com/DanNixon/matrix-remote-closedown/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/DanNixon/matrix-remote-closedown/actions/workflows/ci.yml) [![dependency status](https://deps.rs/repo/github/dannixon/matrix-remote-closedown/status.svg)](https://deps.rs/repo/github/dannixon/matrix-remote-closedown)
 
 A [Matrix](https://matrix.org/) bot that provides a nice interface to [remote-closedown](https://github.com/DanNixon/remote-closedown).
 
