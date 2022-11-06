@@ -20,12 +20,9 @@ pub(crate) async fn login(tx: Sender<Event>, args: Cli) -> Result<Client> {
         .build()
         .await?;
     client
-        .login(
-            args.matrix_username.localpart(),
-            &args.matrix_password,
-            None,
-            Some("matrix-remote-closedown"),
-        )
+        .login_username(args.matrix_username.localpart(), &args.matrix_password)
+        .initial_device_display_name("matrix-remote-closedown")
+        .send()
         .await?;
 
     log::info!("Performing initial sync...");
@@ -33,29 +30,27 @@ pub(crate) async fn login(tx: Sender<Event>, args: Cli) -> Result<Client> {
 
     log::info!("Successfully logged in to Matrix homeserver");
 
-    client
-        .register_event_handler({
+    client.add_event_handler({
+        let tx = tx.clone();
+        move |event: OriginalSyncRoomMessageEvent, room: Room| {
             let tx = tx.clone();
-            move |event: OriginalSyncRoomMessageEvent, room: Room| {
-                let tx = tx.clone();
-                async move {
-                    if let MessageType::Text(TextMessageEventContent { body, .. }) =
-                        event.content.msgtype
-                    {
-                        log::debug!("Received message in room {}", room.room_id());
-                        crate::send_event!(
-                            tx,
-                            Event::MatrixMessageReceive(MatrixMessageReceiveEvent {
-                                room: room.room_id().into(),
-                                body,
-                                sender: event.sender,
-                            })
-                        );
-                    }
+            async move {
+                if let MessageType::Text(TextMessageEventContent { body, .. }) =
+                    event.content.msgtype
+                {
+                    log::debug!("Received message in room {}", room.room_id());
+                    crate::send_event!(
+                        tx,
+                        Event::MatrixMessageReceive(MatrixMessageReceiveEvent {
+                            room: room.room_id().into(),
+                            body,
+                            sender: event.sender,
+                        })
+                    );
                 }
             }
-        })
-        .await;
+        }
+    });
 
     Ok(client)
 }
