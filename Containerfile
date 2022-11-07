@@ -24,4 +24,7 @@ COPY --from=builder \
   /usr/local/bin/matrix-remote-closedown \
   /usr/local/bin/matrix-remote-closedown
 
+ENV OBSERVABILITY_ADDRESS "0.0.0.0:9090"
+EXPOSE 9090
+
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/matrix-remote-closedown"]

@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Error};
+use prometheus_client::encoding::text::Encode;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Command {
@@ -34,7 +35,7 @@ impl TryFrom<String> for Command {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, Eq, Hash, PartialEq, Encode)]
 pub(crate) enum Operation {
     Help,
     Shutdown,

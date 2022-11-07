@@ -1,6 +1,7 @@
 use crate::{
     command::Operation,
     event::{CommandEvent, Event, MatrixMessageSendEvent},
+    metrics::{CommandLables, COMMANDS},
     schema::{self, Response, Status},
     Cli,
 };
@@ -81,6 +82,9 @@ pub(crate) fn run_task(tx: Sender<Event>, config: Cli) -> Result<JoinHandle<()>>
                 }
                 Event::CommandReceive(event) => {
                     log::info!("Processing command: {:?}", event);
+                    COMMANDS
+                        .get_or_create(&CommandLables::new(event.cmd.op.clone()))
+                        .inc();
                     match event.cmd.op {
                         Operation::Help => {
                             crate::send_event!(

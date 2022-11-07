@@ -1,6 +1,7 @@
 mod command;
 mod event;
 mod matrix;
+mod metrics;
 mod mqtt;
 mod processing;
 mod schema;
@@ -8,10 +9,12 @@ mod schema;
 use crate::event::Event;
 use anyhow::Result;
 use clap::Parser;
+use kagiyama::{AlwaysReady, Watcher};
 use matrix_sdk::{
     config::SyncSettings,
     ruma::{OwnedRoomId, OwnedUserId},
 };
+use std::net::SocketAddr;
 use tokio::{signal, sync::broadcast};
 
 #[macro_export]
@@ -84,6 +87,15 @@ struct Cli {
     /// Matrix rooms to send messages to and listen for commands from
     #[clap(value_parser, long = "room")]
     matrix_rooms: Vec<OwnedRoomId>,
+
+    /// Address to listen on for observability/metrics endpoints
+    #[clap(
+        value_parser,
+        long,
+        env = "OBSERVABILITY_ADDRESS",
+        default_value = "127.0.0.1:9090"
+    )]
+    observability_address: SocketAddr,
 }
 
 impl Cli {
@@ -101,6 +113,10 @@ async fn main() -> Result<()> {
     env_logger::init();
 
     let args = Cli::parse();
+
+    let mut watcher = Watcher::<AlwaysReady>::default();
+    metrics::register(&watcher);
+    watcher.start_server(args.observability_address).await?;
 
     let (tx, mut rx) = broadcast::channel::<Event>(16);
 
