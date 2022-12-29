@@ -24,6 +24,10 @@ COPY --from=builder \
   /usr/local/bin/matrix-remote-closedown \
   /usr/local/bin/matrix-remote-closedown
 
+ENV MATRIX_STORAGE /data/matrix
+RUN mkdir /data
+VOLUME /data
+
 ENV OBSERVABILITY_ADDRESS "0.0.0.0:9090"
 EXPOSE 9090
 

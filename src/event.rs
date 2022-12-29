@@ -5,7 +5,6 @@ use matrix_sdk::ruma::{OwnedRoomId, OwnedUserId};
 #[derive(Clone, Debug)]
 pub(crate) enum Event {
     MatrixMessageReceive(MatrixMessageReceiveEvent),
-    MatrixMessageSend(MatrixMessageSendEvent),
 
     MqttStatusMessageReceived(String),
     MqttSendCommandMessage(String),
@@ -19,12 +18,6 @@ pub(crate) enum Event {
 pub(crate) struct MatrixMessageReceiveEvent {
     pub room: OwnedRoomId,
     pub sender: OwnedUserId,
-    pub body: String,
-}
-
-#[derive(Clone, Debug)]
-pub(crate) struct MatrixMessageSendEvent {
-    pub room: OwnedRoomId,
     pub body: String,
 }
 
