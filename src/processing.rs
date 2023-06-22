@@ -7,6 +7,7 @@ use crate::{
 };
 use anyhow::Result;
 use matrix_sdk::ruma::events::room::message::RoomMessageEventContent;
+use mqtt_channel_client as mqtt;
 use tokio::{sync::broadcast::Sender, task::JoinHandle};
 use unindent::Unindent;
 
@@ -43,7 +44,7 @@ pub(crate) fn run_task(
                         }
                         Event::MqttSendCommandMessage(msg) => {
                             log::info!("Sending command message: {}", msg);
-                            if let Err(e) = mqtt_client.send(paho_mqtt::Message::new(&config.command_topic, msg, 2)) {
+                            if let Err(e) = mqtt_client.send(mqtt::paho_mqtt::Message::new(&config.command_topic, msg, 2)) {
                                 log::warn!("Error sending command message ({})", e);
                             }
                         },
