@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Error};
-use prometheus_client::encoding::EncodeLabelValue;
+use kagiyama::prometheus::{self as prometheus_client, encoding::EncodeLabelValue};
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Command {

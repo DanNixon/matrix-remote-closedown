@@ -1,9 +1,10 @@
 use crate::command::Operation;
-use lazy_static::lazy_static;
-use prometheus_client::{
+use kagiyama::prometheus::{
+    self as prometheus_client,
     encoding::EncodeLabelSet,
     metrics::{counter::Counter, family::Family},
 };
+use lazy_static::lazy_static;
 
 #[derive(Debug, Clone, Eq, Hash, PartialEq, EncodeLabelSet)]
 pub(crate) struct CommandLables {
