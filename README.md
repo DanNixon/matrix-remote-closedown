@@ -26,7 +26,5 @@ podman run \
   --matrix-username '@mb7pmf:matrix.org' \
   --matrix-password 'super_secret' \
   --room '!some_room:matrix.org' \
-  --room '!some_other_room:matrix.org' \
-  --operator '@dannixon:matrix.org'
-  --operator '@someone_else:matrix.org'
+  --room '!some_other_room:matrix.org'
 ```

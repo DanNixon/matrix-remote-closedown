@@ -89,10 +89,6 @@ struct Cli {
     #[clap(value_parser, long, env = "STATION_NAME")]
     station_name: String,
 
-    /// Station operator Matrix IDs
-    #[clap(value_parser, long = "operator")]
-    station_operators: Vec<OwnedUserId>,
-
     /// Matrix rooms to send messages to and listen for commands from
     #[clap(value_parser, long = "room")]
     matrix_rooms: Vec<OwnedRoomId>,
@@ -105,16 +101,6 @@ struct Cli {
         default_value = "127.0.0.1:9090"
     )]
     observability_address: SocketAddr,
-}
-
-impl Cli {
-    pub(crate) fn station_operators_string_list(&self) -> String {
-        self.station_operators
-            .iter()
-            .map(|i| i.to_string())
-            .collect::<Vec<String>>()
-            .join(", ")
-    }
 }
 
 #[tokio::main]

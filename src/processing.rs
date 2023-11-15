@@ -70,12 +70,7 @@ pub(crate) fn run_task(
                             match event.try_into() {
                                 Ok::<CommandEvent, _>(cmd_event) => {
                                     if cmd_event.cmd.station_name == config.station_name {
-                                        let op_only_command = cmd_event.cmd.op.is_operator_only();
-                                        if !op_only_command || config.station_operators.contains(&sender) {
-                                            crate::send_event!(tx, Event::CommandReceive(cmd_event));
-                                        } else {
-                                            log::info!("Ignoring operator only command issued by {}, who is not an operator", sender);
-                                        }
+                                        crate::send_event!(tx, Event::CommandReceive(cmd_event));
                                     } else {
                                         log::debug!(
                                             "Ignoring command with unknown station name: {}",
@@ -115,11 +110,9 @@ pub(crate) fn run_task(
                                                 "
                                                 [matrix-remote-closedown](https://github.com/DanNixon/matrix-remote-closedown) for station **{}**.<br>
                                                 Usage: !{} COMMAND<br>
-                                                Commands: help, shutdown, power on, power off, ptt enable, ptt disable<br>
-                                                Station operators: {}",
+                                                Commands: help, shutdown, power on, power off, ptt enable, ptt disable",
                                                 config.station_name,
                                                 config.station_name,
-                                                config.station_operators_string_list(),
                                                 ).unindent()
                                             ),
                                             None,
@@ -226,10 +219,8 @@ pub(crate) fn run_task(
                                         &config,
                                         &format!(
                                             "
-                                            ({})<br>
                                             **{}** at {}<br>
                                             Message: {}",
-                                            config.station_operators_string_list(),
                                             config.station_name,
                                             msg.timestamp,
                                             m,
