@@ -45,19 +45,6 @@ pub(crate) enum Operation {
     PttDisable,
 }
 
-impl Operation {
-    pub(crate) fn is_operator_only(&self) -> bool {
-        match self {
-            Self::Help => false,
-            Self::Shutdown => true,
-            Self::PowerOff => true,
-            Self::PowerOn => true,
-            Self::PttEnable => true,
-            Self::PttDisable => true,
-        }
-    }
-}
-
 impl TryFrom<&[&str]> for Operation {
     type Error = Error;
 
