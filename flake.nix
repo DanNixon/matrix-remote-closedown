@@ -91,8 +91,12 @@
 
             config = {
               Entrypoint = ["${pkgs.tini}/bin/tini" "--" "${default}/bin/matrix-remote-closedown"];
+              ExposedPorts = {
+                "9090/tcp" = {};
+              };
               Env = [
                 "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
+                "OBSERVABILITY_ADDRESS=0.0.0.0:9090"
               ];
             };
           };
