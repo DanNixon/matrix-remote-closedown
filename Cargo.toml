@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
-chrono = { version = "0.4.22", features = ["serde"] }
+chrono = { version = "0.4.33", features = ["serde"] }
 clap = { version = "4.4", features = ["derive", "env"] }
 kagiyama = "0.3.0"
 lazy_static = "1.4.0"
